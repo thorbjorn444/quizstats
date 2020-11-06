@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
     <script src="math.js" type="text/javascript"></script>
+    <style>
+        table {
+          border-collapse: collapse;
+        }
+        tr.border_bottom {
+          border-bottom: 1px solid black;
+        }
+    </style>
     <script type="text/javascript">
 
         function calculate_probs() {
@@ -60,6 +68,7 @@
         function addrows (tablebody, n) {
           for (var i=0; i<n; i++) {
             var row = document.createElement("tr");
+            row.className = "border_bottom";
             var titlecell = document.createElement("td");
             titlecell.appendChild(document.createTextNode("Bank " + i));
             row.appendChild(titlecell);
@@ -73,7 +82,7 @@
             bank_size_input.setAttribute("name", "bank_size["+i+"]");
             bank_size_input.setAttribute("id", "bank_size["+i+"]");
             bank_size_input.setAttribute("value", 2);
-            bank_size_label.innerText = "Questions in Bank: ";
+            bank_size_label.innerText = "Questions in bank: ";
             bank_size_label_cell.appendChild(bank_size_label);
             bank_size_cell.appendChild(bank_size_input);
             bank_size_row.appendChild(bank_size_label_cell);
@@ -89,7 +98,7 @@
             quiz_questions_input.setAttribute("name", "quiz_questions["+i+"]");
             quiz_questions_input.setAttribute("id", "quiz_questions["+i+"]");
             quiz_questions_input.setAttribute("value", 1);
-            quiz_questions_label.innerText = "Questions Used per Quiz: ";
+            quiz_questions_label.innerText = "Bank's questions used per quiz: ";
             quiz_questions_label_cell.appendChild(quiz_questions_label);
             quiz_questions_cell.appendChild(quiz_questions_input);
             quiz_questions_row.appendChild(quiz_questions_label_cell);
@@ -98,6 +107,15 @@
             tablebody.appendChild(row);
             tablebody.appendChild(bank_size_row);
             tablebody.appendChild(quiz_questions_row);
+
+
+
+            var blankRow = document.createElement("tr");
+            var blankCell = document.createElement("td");
+            var newLine = document.createElement("br");
+            blankCell.appendChild(newLine);
+            blankRow.appendChild(blankCell);
+            tablebody.appendChild(blankRow);
           }
         }
 
@@ -169,7 +187,6 @@
 
       </tbody>
     </table>
-    <br>
     <div>
         <label>Number of students taking the quiz:</label>
         <input type="number" id="numquizzes" name="numquizzes" value=10>
@@ -177,6 +194,7 @@
     </div>
     <br>
     <button disabled=true id="calculate_probability" onclick="calculate_probs()">Calculate probabilities</button>
+    <br>
     <div id="results"></div>
 </body>
 </html>
