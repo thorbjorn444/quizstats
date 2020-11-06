@@ -1,16 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="math.js" type="text/javascript"></script>
+    <script type="text/javascript">
+
+        function calculate_probs() {
+          var numbanks = document.getElementById("numrows");
+          // number of question banks
+          var n = parseInt(numbanks.value);
+
+          // get the user input from the table
+          var bank_sizes = [];
+          var quiz_questions_per_bank = [];
+          for (let i = 0; i < n; i++) {
+              var bank_size_item = document.getElementById("bank_size["+i+"]");
+              var bank_size = parseInt(bank_size_item.value);
+              bank_sizes.push(bank_size);
+
+              var quiz_questions_item = document.getElementById("quiz_questions["+i+"]");
+              var quiz_questions = parseInt(quiz_questions_item.value);
+              quiz_questions_per_bank.push(quiz_questions);
+          }
+
+          // number of quizzes
+          var numquizzes = document.getElementById("numquizzes");
+          var quizzes = parseInt(numquizzes.value);
+
+          // do actual math here
+          // First, we determine the likelihood of any given quiz
+          var combined_bank_probabilities = 1;
+          for (let i = 0; i < n; i++){
+              console.log(i);
+              var possible_bank_combinations = math.factorial(bank_sizes[i]) / (math.factorial(quiz_questions_per_bank[i]) * math.factorial(bank_sizes[i] - quiz_questions_per_bank[i]));
+              var next_bank_probability = 1 / possible_bank_combinations;
+              combined_bank_probabilities = next_bank_probability * combined_bank_probabilities
+          }
+          var probability_of_given_quiz = combined_bank_probabilities;
+
+          // then, we determine how likely it is that there are 0 duplicates
+          var no_duplicates_probability = 1;
+          for (let i = 0; i < quizzes; i++){
+              no_duplicates_probability = no_duplicates_probability * (1 - i * probability_of_given_quiz);
+          }
+
+          // finally, the odds of having any duplicates is the converse of having no duplicates
+          var duplicates_probability = 1 - no_duplicates_probability;
+
+          var results = document.getElementById("results");
+          results.innerText = "While the probability of getting any given quiz is only " + probability_of_given_quiz + ", the probability of getting at least one duplicate quiz is " + duplicates_probability
+
+        }
+
+        function removerows (tablebody) {
+          var rows = tablebody.getElementsByTagName("tr");
+          while (rows.length)
+            rows[0].parentNode.removeChild(rows[0]);
+        }
+
+        function addrows (tablebody, n) {
+          for (var i=0; i<n; i++) {
+            var row = document.createElement("tr");
+            var titlecell = document.createElement("td");
+            titlecell.appendChild(document.createTextNode("Bank " + i));
+            row.appendChild(titlecell);
+
+            var bank_size_row = document.createElement("tr");
+            var bank_size_label_cell = document.createElement("td");
+            var bank_size_cell = document.createElement("td");
+            var bank_size_label = document.createElement("label");
+            var bank_size_input = document.createElement("input");
+            bank_size_input.setAttribute("type", "number");
+            bank_size_input.setAttribute("name", "bank_size["+i+"]");
+            bank_size_input.setAttribute("id", "bank_size["+i+"]");
+            bank_size_input.setAttribute("value", 2);
+            bank_size_label.innerText = "Questions in Bank: ";
+            bank_size_label_cell.appendChild(bank_size_label);
+            bank_size_cell.appendChild(bank_size_input);
+            bank_size_row.appendChild(bank_size_label_cell);
+            bank_size_row.appendChild(bank_size_cell);
+
+
+            var quiz_questions_row = document.createElement("tr");
+            var quiz_questions_label_cell = document.createElement("td");
+            var quiz_questions_cell = document.createElement("td");
+            var quiz_questions_label = document.createElement("label");
+            var quiz_questions_input = document.createElement("input");
+            quiz_questions_input.setAttribute("type", "number");
+            quiz_questions_input.setAttribute("name", "quiz_questions["+i+"]");
+            quiz_questions_input.setAttribute("id", "quiz_questions["+i+"]");
+            quiz_questions_input.setAttribute("value", 1);
+            quiz_questions_label.innerText = "Questions Used per Quiz: ";
+            quiz_questions_label_cell.appendChild(quiz_questions_label);
+            quiz_questions_cell.appendChild(quiz_questions_input);
+            quiz_questions_row.appendChild(quiz_questions_label_cell);
+            quiz_questions_row.appendChild(quiz_questions_cell);
+
+            tablebody.appendChild(row);
+            tablebody.appendChild(bank_size_row);
+            tablebody.appendChild(quiz_questions_row);
+          }
+        }
+
+        function change () {
+          var select = document.getElementById("numrows");
+          var n = parseInt(select.value);
+          var tablebody = document.getElementById("maintablebody");
+          removerows(tablebody);
+          addrows(tablebody, n);
+
+          var calcbutton = document.getElementById("calculate_probability");
+          if (n > 0) {
+              calcbutton.disabled = false;
+          } else {
+              calcbutton.disabled = true;
+          }
+        }
+
+
+  </script>
     <meta charset="UTF-8">
     <title>Quiz Stats</title>
-    <div>
-        <H2>Inputs</H2>
-        <label>Number of question banks:</label>
-        <input type="number">
 
-    </div>
 </head>
 <body>
+    <div>
+        <H2>What is the likelihood of seeing a duplicate quiz, given the parameters below?</H2>
+        <br>
+        <div>
+            This is basically the birthday problem[1], where we have many possible
+            outcomes, and we want to determine what the likelihood is that at least two
+            overlap.
+        </div>
+        <br>
+        <div>
+            The easier approach is to estimate the probability that two quizzes _don't_
+            overlap, and then subtract that from 1.
 
+        </div>
+        <br>
+        <div>
+            The likelihood of a given quiz not overlapping with itself is 1. For the next
+            quiz, it's 1 - (probability of a given quiz). For the 3rd, it's
+            1 - (2 * probability of a given quiz), etc.
+        </div>
+        <br>
+        <div>
+            The probability of a given quiz is just an combination problem[2] for each bank,
+            then the product of each bank's likelihood as they are all independant. (This could also be setup as a permutation problem, if the order the questions appear matters.)
+
+        </div>
+        <br>
+        <div>
+            [1] https://en.wikipedia.org/wiki/Birthday_problem
+            [2] https://en.wikipedia.org/wiki/Combination
+        </div>
+        <br>
+        <div>
+            With all that said, please input your parameters below (beginning with the number of question banks), then click "Calculate Probabilities"
+        </div>
+        <br>
+        <label>Number of question banks:</label>
+        <input type="number" id="numrows" name="numrows" onkeyup="change()" onchange="change()" value=0>
+
+    </div>
+    <br>
+    <table id="maintable">
+      <tbody id="maintablebody">
+
+      </tbody>
+    </table>
+    <br>
+    <div>
+        <label>Number of quizzes:</label>
+        <input type="number" id="numquizzes" name="numquizzes" value=10>
+
+    </div>
+    <br>
+    <button disabled=true id="calculate_probability" onclick="calculate_probs()">Calculate probabilities</button>
+    <div id="results"></div>
 </body>
 </html>
